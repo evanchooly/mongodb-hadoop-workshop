@@ -30,9 +30,14 @@ public class DataSet {
         System.out.println("Importing ratings");
 
         int count = 0;
-        final DBCollection coll = db.getCollection("ratings");
-        coll.drop();
-        BulkWriteOperation ratings = null;
+        final DBCollection ratings = db.getCollection("ratings");
+        final DBCollection users = db.getCollection("users");
+        final DBCollection movies = db.getCollection("movies");
+        
+        ratings.drop();
+        users.drop();
+        
+        BulkWriteOperation ratingUpdate = null;
         BulkWriteOperation movieUpdate = null;
         BulkWriteOperation userUpdate = null;
         try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
@@ -40,14 +45,14 @@ public class DataSet {
             while ((line = reader.readLine()) != null) {
                 final String[] split = line.split("::");
                 if (count % 1000 == 0) {
-                    ratings = coll.initializeUnorderedBulkOperation();
-                    movieUpdate = coll.initializeUnorderedBulkOperation();
-                    userUpdate = coll.initializeUnorderedBulkOperation();
+                    ratingUpdate = db.getCollection("ratings").initializeUnorderedBulkOperation();
+                    movieUpdate = movies.initializeUnorderedBulkOperation();
+                    userUpdate = db.getCollection("users").initializeUnorderedBulkOperation();
                 }
                 final Integer movieId = Integer.valueOf(split[0]);
                  final Double rating = Double.valueOf(split[2]);
                 final Integer userId = Integer.valueOf(split[1]);
-                ratings.insert(new BasicDBObject("movieid", movieId)
+                ratingUpdate.insert(new BasicDBObject("movieid", movieId)
                                    .append("userid", userId)
                                    .append("rating", rating)
                                    .append("ts", new Date(Long.valueOf(split[3]))));
@@ -65,7 +70,7 @@ public class DataSet {
                 
                 if (count % 1000 == 0) {
                     System.out.printf("Writing batch to ratings (%d)\n", count);
-                    ratings.execute();
+                    ratingUpdate.execute();
                     movieUpdate.execute();
                     userUpdate.execute();
                 }
