@@ -33,46 +33,46 @@ public class DataSet {
         final DBCollection ratings = db.getCollection("ratings");
         final DBCollection users = db.getCollection("users");
         final DBCollection movies = db.getCollection("movies");
-        
+
         ratings.drop();
         users.drop();
-        
-        BulkWriteOperation ratingUpdate = null;
-        BulkWriteOperation movieUpdate = null;
-        BulkWriteOperation userUpdate = null;
+
+        BulkWriteOperation ratingUpdate = ratings.initializeUnorderedBulkOperation();
+        BulkWriteOperation movieUpdate = movies.initializeUnorderedBulkOperation();
+        BulkWriteOperation userUpdate = users.initializeUnorderedBulkOperation();
+
         try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 final String[] split = line.split("::");
-                if (count % 1000 == 0) {
-                    ratingUpdate = db.getCollection("ratings").initializeUnorderedBulkOperation();
-                    movieUpdate = movies.initializeUnorderedBulkOperation();
-                    userUpdate = db.getCollection("users").initializeUnorderedBulkOperation();
-                }
                 final Integer movieId = Integer.valueOf(split[0]);
-                 final Double rating = Double.valueOf(split[2]);
+                final Double rating = Double.valueOf(split[2]);
                 final Integer userId = Integer.valueOf(split[1]);
                 ratingUpdate.insert(new BasicDBObject("movieid", movieId)
-                                   .append("userid", userId)
-                                   .append("rating", rating)
-                                   .append("ts", new Date(Long.valueOf(split[3]))));
+                                        .append("userid", userId)
+                                        .append("rating", rating)
+                                        .append("ts", new Date(Long.valueOf(split[3]))));
                 movieUpdate
                     .find(new BasicDBObject("movieid", movieId))
                     .update(new BasicDBObject("$inc",
                                               new BasicDBObject("ratings", 1)
                                                   .append("total_rating", rating)));
-                
+
                 userUpdate
                     .find(new BasicDBObject("userid", userId))
                     .upsert()
                     .update(new BasicDBObject("$inc", new BasicDBObject("ratings", 1)));
                 count++;
-                
+
                 if (count % 1000 == 0) {
                     System.out.printf("Writing batch to ratings (%d)\n", count);
                     ratingUpdate.execute();
                     movieUpdate.execute();
                     userUpdate.execute();
+
+                    ratingUpdate = ratings.initializeUnorderedBulkOperation();
+                    movieUpdate = movies.initializeUnorderedBulkOperation();
+                    userUpdate = users.initializeUnorderedBulkOperation();
                 }
             }
         }
@@ -81,7 +81,6 @@ public class DataSet {
 
     private static void importMovies(final String path, final DB db) throws IOException {
         System.out.println("Importing movies");
-        //        regex = re.compile("(?P<movieid>[0-9]+)::(?P<title>.+?) \((?P<year>\d{4})\)::(?P<genres>.+?)\n")
         final DBCollection coll = db.getCollection("movies");
         coll.drop();
         BulkWriteOperation bulk = null;
