@@ -1,5 +1,11 @@
 -- Hive Exercise
 
+DROP TABLE ratings;
+DROP TABLE ratings2;
+DROP TABLE movieid_pairs;
+DROP TABLE movieid_pairs2;
+DROP TABLE movieid_counts;
+
 -- Builds up a table of similar movie pairs ordered by count.
 
 CREATE EXTERNAL TABLE ratings (userid INT, movieid INT, rating INT)
@@ -38,6 +44,6 @@ INSERT INTO TABLE movieid_counts
 
 DROP TABLE ratings;
 DROP TABLE ratings2;
-DROP TABLE movied_pairs;
-DROP TABLE movied_pairs2;
+DROP TABLE movieid_pairs;
+DROP TABLE movieid_pairs2;
 DROP TABLE movieid_counts;
