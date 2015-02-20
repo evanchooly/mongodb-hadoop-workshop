@@ -160,15 +160,12 @@ public class DataSet {
         LOG.info("Importing movies");
         final DBCollection coll = db.getCollection(MOVIES);
         coll.drop();
-        BulkWriteOperation bulk = null;
+        BulkWriteOperation bulk = coll.initializeUnorderedBulkOperation();
         try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
             String line;
             int count = 0;
             while ((line = reader.readLine()) != null) {
                 final String[] split = line.split("::");
-                if (count % 1000 == 0) {
-                    bulk = coll.initializeUnorderedBulkOperation();
-                }
                 String title = split[1];
                 Integer year = null;
                 if (title.endsWith(")")) {
@@ -185,8 +182,8 @@ public class DataSet {
                 count++;
 
                 if (count % 1000 == 0) {
-                    LOG.info("Writing batch to movies collection");
                     bulk.execute();
+                    bulk = coll.initializeUnorderedBulkOperation();
                 }
             }
             bulk.execute();
