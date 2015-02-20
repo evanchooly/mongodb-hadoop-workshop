@@ -64,7 +64,7 @@
                             <includeArtifactIds>
                                 mongo-hadoop-core,mongo-java-driver
                             </includeArtifactIds>
-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <outputDirectory>/usr/local/hadoop/share/hadoop/common/lib</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
