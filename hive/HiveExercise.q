@@ -4,7 +4,7 @@
 
 CREATE EXTERNAL TABLE ratings (userid INT, movieid INT, rating INT)
 STORED BY 'com.mongodb.hadoop.hive.MongoStorageHandler'
-TBLPROPERTIES('mongo.uri'='mongodb://127.0.0.1:27017/mlsmall.ratings');
+TBLPROPERTIES('mongo.uri'='mongodb://127.0.0.1:27017/movielens.ratings');
 
 CREATE TABLE ratings2 (userid INT, movieid INT);
 
@@ -29,7 +29,7 @@ INSERT OVERWRITE TABLE movieid_pairs2
 
 CREATE EXTERNAL TABLE movieid_counts (movieid INT, rmovieid INT, count INT)
 STORED BY 'com.mongodb.hadoop.hive.MongoStorageHandler'
-TBLPROPERTIES('mongo.uri'='mongodb://127.0.0.1:27017/mlsmall.hive_exercise');
+TBLPROPERTIES('mongo.uri'='mongodb://127.0.0.1:27017/movielens.hive_exercise');
 
 INSERT INTO TABLE movieid_counts
   SELECT movieid, rmovieid, COUNT(rmovieid)
