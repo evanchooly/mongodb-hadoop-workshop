@@ -11,19 +11,20 @@
 
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
+    <artifactId>hive</artifactId>
     <name>hive</name>
-    <url>http://maven.apache.org</url>
+
     <dependencies>
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.mongodb</groupId>
+            <groupId>org.mongodb.mongo-hadoop</groupId>
             <artifactId>mongo-hadoop-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.mongodb</groupId>
+            <groupId>org.mongodb.mongo-hadoop</groupId>
             <artifactId>mongo-hadoop-hive</artifactId>
         </dependency>
     </dependencies>
