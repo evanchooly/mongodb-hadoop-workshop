@@ -48,7 +48,7 @@ public class DataSet {
         aggregateUsers(db);
         aggregateMovies(db);
         createGenres(db);
-        ensureIndexes(client.getDB("movielens"));
+        ensureIndexes(db);
     }
 
     private static BasicDBObject o(final String key, final Object value) {
@@ -59,7 +59,7 @@ public class DataSet {
         LOG.info("Creating genres");
         final DBCollection movies = db.getCollection(MOVIES);
         final DBCollection genres = db.getCollection(GENRES);
-        genres.remove(new BasicDBObject());
+        genres.drop();
         final Cursor aggregate = movies.aggregate(asList(o("$unwind", "$genres"),
                                                          o("$group", o("_id", "$genres")
                                                                          .append("count", o("$sum", 1)))),
