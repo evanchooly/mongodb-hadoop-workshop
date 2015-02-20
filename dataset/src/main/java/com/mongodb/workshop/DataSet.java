@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -144,8 +145,8 @@ public class DataSet {
                 count++;
 
                 if (count % 1000 == 0) {
-                    if (count % 10000 == 0) {
-                        System.out.printf("Writing batch to ratings (%d)\n", count);
+                    if (count % 100_000 == 0) {
+                        LOG.info(format("Writing batch to ratings (%d)", count));
                     }
                     ratingUpdate.execute();
                     ratingUpdate = ratings.initializeUnorderedBulkOperation();
