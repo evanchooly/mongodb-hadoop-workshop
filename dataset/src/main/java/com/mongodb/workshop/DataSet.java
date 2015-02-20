@@ -9,6 +9,7 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
+import com.oracle.tools.packager.Log;
 import org.slf4j.Logger;
 
 import java.io.BufferedReader;
@@ -77,12 +78,14 @@ public class DataSet {
     }
 
     private static void ensureIndexes(final DB db) {
+        Log.info("Creating indexes");
         db.getCollection(MOVIES).createIndex(o(MOVIEID, 1));
         db.getCollection(MOVIES).createIndex(o(RATINGS, 1));
         db.getCollection(MOVIES).createIndex(o(GENRES, 1));
         db.getCollection(RATINGS).createIndex(o(USERID, 1).append(MOVIEID, 1));
         db.getCollection(USERS).createIndex(o(USERID, 1));
         db.getCollection(GENRES).createIndex(o("name", 1));
+        Log.info("Done creating indexes");
     }
 
     private static void aggregateMovies(final DB db) {
