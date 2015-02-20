@@ -14,13 +14,13 @@ Finally, load the dataset:
 
     $ python dataset/movielens.py [/path/to/movies.dat] [/path/to/ratings.dat]
 
-For more information refer to the [dataset README](https://github.com/crcsmnky/mongodb-hadoop-workshop/tree/master/dataset).
+For more information refer to the [dataset README](dataset).
 
 ## Exercises
 
 Refer to the individual READMEs for steps on building and deploying each exercise.
 
-- [MapReduce](https://github.com/crcsmnky/mongodb-hadoop-workshop/tree/master/mapreduce)
-- [Pig](https://github.com/crcsmnky/mongodb-hadoop-workshop/tree/master/pig)
-- [Hive](https://github.com/crcsmnky/mongodb-hadoop-workshop/tree/master/hive)
-- [Spark](https://github.com/crcsmnky/mongodb-hadoop-workshop/tree/master/spark)
+- [MapReduce](mapreduce)
+- [Pig](pig)
+- [Hive](hive)
+- [Spark](spark)
