@@ -42,8 +42,8 @@ INSERT INTO TABLE movieid_counts
   FROM movieid_pairs2
   GROUP BY movieid, rmovieid;
 
-DROP TABLE ratings;
-DROP TABLE ratings2;
-DROP TABLE movieid_pairs;
-DROP TABLE movieid_pairs2;
-DROP TABLE movieid_counts;
+-- DROP TABLE ratings;
+-- DROP TABLE ratings2;
+-- DROP TABLE movieid_pairs;
+-- DROP TABLE movieid_pairs2;
+-- DROP TABLE movieid_counts;
