@@ -8,42 +8,27 @@ DROP TABLE movieid_counts;
 
 -- Builds up a table of similar movie pairs ordered by count.
 
-CREATE EXTERNAL TABLE ratings (userid INT, movieid INT, rating INT)
-STORED BY 'com.mongodb.hadoop.hive.MongoStorageHandler'
-TBLPROPERTIES('mongo.uri'='mongodb://127.0.0.1:27017/movielens.ratings');
+-- Create table talking to mongo
 
-CREATE TABLE ratings2 (userid INT, movieid INT);
+-- create table to store ratings
 
-INSERT OVERWRITE TABLE ratings2
-  SELECT userid, movieid FROM ratings
-  WHERE rating > 3;
+-- select the data to use
 
-CREATE TABLE movieid_pairs (movieid INT, rmovieid INT);
+-- create movie id pairs
 
-INSERT OVERWRITE TABLE movieid_pairs
-  SELECT a.movieid, c.movieid
-  FROM ratings2 a
-  JOIN ratings2 b ON (a.movieid = b.movieid)
-  JOIN ratings2 c ON (b.userid = c.userid);
+-- select the data
 
+-- another movie id pairs table
 CREATE TABLE movieid_pairs2 (movieid INT, rmovieid INT);
 
-INSERT OVERWRITE TABLE movieid_pairs2
-  SELECT movieid, rmovieid
-  FROM movieid_pairs
-  WHERE movieid != rmovieid;
+-- filter out mismatches
 
-CREATE EXTERNAL TABLE movieid_counts (movieid INT, rmovieid INT, count INT)
-STORED BY 'com.mongodb.hadoop.hive.MongoStorageHandler'
-TBLPROPERTIES('mongo.uri'='mongodb://127.0.0.1:27017/movielens.hive_exercise');
+-- crate movie id counts table to store in to mongo
 
-INSERT INTO TABLE movieid_counts
-  SELECT movieid, rmovieid, COUNT(rmovieid)
-  FROM movieid_pairs2
-  GROUP BY movieid, rmovieid;
+-- insert in to mongo
 
--- DROP TABLE ratings;
--- DROP TABLE ratings2;
--- DROP TABLE movieid_pairs;
--- DROP TABLE movieid_pairs2;
--- DROP TABLE movieid_counts;
+DROP TABLE ratings;
+DROP TABLE ratings2;
+DROP TABLE movieid_pairs;
+DROP TABLE movieid_pairs2;
+DROP TABLE movieid_counts;

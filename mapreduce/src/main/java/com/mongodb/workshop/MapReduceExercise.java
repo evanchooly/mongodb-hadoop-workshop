@@ -34,10 +34,6 @@ public class MapReduceExercise
         @Override
         public void map(final Object key, final BSONObject doc, final Context context)
           throws IOException, InterruptedException {
-            final int movieId = (Integer)doc.get("movieid");
-            final Number movieRating = (Number)doc.get("rating");
-
-            context.write(new IntWritable(movieId), new DoubleWritable(movieRating.doubleValue()));
         }
     }
 
@@ -45,23 +41,6 @@ public class MapReduceExercise
         @Override
         public void reduce(final IntWritable key, final Iterable<DoubleWritable> values, final Context context)
           throws IOException, InterruptedException {
-            DescriptiveStatistics stats = new DescriptiveStatistics();
-            for(DoubleWritable rating : values) {
-                stats.addValue(rating.get());
-            }
-
-            DBObject builder = new BasicDBObjectBuilder().start()
-                .add("movieid", key.get())
-                .add("mean", stats.getMean())
-                .add("median", stats.getPercentile(50))
-                .add("std", stats.getStandardDeviation())
-                .add("count", stats.getN())
-                .add("total", stats.getSum())
-                .get();
-
-            BSONWritable doc = new BSONWritable(builder);
-
-            context.write(NullWritable.get(), doc);
         }
     }
 
@@ -69,23 +48,6 @@ public class MapReduceExercise
         @Override
         public void reduce(final IntWritable key, final Iterable<DoubleWritable> values, final Context context)
           throws IOException, InterruptedException {
-            DescriptiveStatistics stats = new DescriptiveStatistics();
-            for(DoubleWritable rating : values) {
-                stats.addValue(rating.get());
-            }
-
-            BasicBSONObject query = new BasicBSONObject("movieid", key.get());
-            DBObject statValues = new BasicDBObjectBuilder().start()
-                .add("mean", stats.getMean())
-                .add("median", stats.getPercentile(50))
-                .add("std", stats.getStandardDeviation())
-                .add("count", stats.getN())
-                .add("total", stats.getSum())
-                .get();
-            BasicBSONObject movieStats = new BasicBSONObject("stats", statValues);
-            BasicBSONObject update = new BasicBSONObject("$set", movieStats);
-
-            context.write(NullWritable.get(), new MongoUpdateWritable(query, update));
         }
     }
 
@@ -118,35 +80,6 @@ public class MapReduceExercise
         Configuration conf = new Configuration();
 
         // Set MongoDB-specific configuration items
-        conf.setClass("mongo.job.mapper", Map.class, Mapper.class);
-        conf.setClass("mongo.job.reducer", reducerClass, Reducer.class);
 
-        conf.setClass("mongo.job.mapper.output.key", IntWritable.class, Object.class);
-        conf.setClass("mongo.job.mapper.output.value", DoubleWritable.class, Object.class);
-
-        conf.setClass("mongo.job.output.key", NullWritable.class, Object.class);
-        conf.setClass("mongo.job.output.value", outputValueClass, Object.class);
-
-        conf.set("mongo.input.uri",  args[0]);
-        conf.set("mongo.output.uri", args[1]);
-
-        Job job = Job.getInstance(conf);
-
-        // Set Hadoop-specific job parameters
-        job.setInputFormatClass(MongoInputFormat.class);
-        job.setOutputFormatClass(MongoOutputFormat.class);
-
-        job.setMapOutputKeyClass(IntWritable.class);
-        job.setMapOutputValueClass(DoubleWritable.class);
-
-        job.setOutputKeyClass(NullWritable.class);
-        job.setOutputValueClass(outputValueClass);
-
-        job.setMapperClass(Map.class);
-        job.setReducerClass(reducerClass);
-
-        job.setJarByClass(MapReduceExercise.class);
-
-        job.submit();
     }
 }
