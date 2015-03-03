@@ -10,7 +10,7 @@ buildscript {
     }
     dependencies {
         classpath 'org.zeroturnaround:zt-exec:1.6'
-
+        classpath 'org.apache.commons:commons-lang3:3.3.2'
         classpath 'de.undercouch:gradle-download-task:1.0'
     }
 }
@@ -24,14 +24,21 @@ ext.profile = file("${userHome}/.profile")
 ext.workshop_files = file("${project.buildDir}/workshop-files")
 
 ext.hadoop_version = '2.6.0'
-ext.hive_version = '1.0.0'
-ext.pig_version = '0.13.0'
-ext.spark_version = '1.2.1'
-
 ext.hadoop_home = file("${workshop_files}/hadoop-${hadoop_version}")
+ext.hadoop = "${hadoop_home}/bin/hadoop".toString()
+ext.hdfs = "${hadoop_home}/bin/hdfs".toString()
+
+ext.hive_version = '1.0.0'
 ext.hive_home = file("${workshop_files}/apache-hive-${hive_version}-bin")
+ext.hive = "${hive_home}/bin/hive".toString()
+
+ext.pig_version = '0.13.0'
 ext.pig_home = file("${workshop_files}/pig-${pig_version}")
+ext.pig = "${pig_home}/bin/pig".toString()
+
+ext.spark_version = '1.2.1'
 ext.spark_home = file("${workshop_files}/spark-${spark_version}")
+ext.spark = "${spark_home}/bin/spark-submit".toString()
 
 def log(message) {
     logger.warn "[----------- ${message} -----------]"
@@ -87,10 +94,18 @@ task clean(type: Delete) {
 
 def execute(command, args = [], outStream = null, errStream = null, background = false) {
     def env = []
-//    env.HADOOP_HOME = project.hadoop_home
 
     env << System.getProperties()
-
+/*
+    showType('command', command)
+    args.forEach {
+        showType('arg', it)
+    }
+    showType('outStream', outStream)
+    showType('errStream', errStream)
+    showType('background', background)
+*/
+    
     def executor = new org.zeroturnaround.exec.ProcessExecutor().command([command.toString()] + args)
                                                                 .readOutput(true)
                                                                 .environment(env);
@@ -119,10 +134,19 @@ def execute(command, args = [], outStream = null, errStream = null, background =
     }
 }
 
+def showType(name, value) {
+    print "name: ${name} --> "
+    if (value) {
+        print value.class.getName()
+        print " - "
+    }
+    println value
+}
+
 task install_dataset() << {
     def extracted = file("${workshop_files}/mlsmall")
     extract workshop_files, file('dataset/mlsmall.tar.gz'), extracted
-    execute "mongorestore", [ '--drop', '-d', 'movielens', extracted.getPath()]
+    execute "mongorestore", ['--drop', '-d', 'movielens', extracted.getPath()]
 }
 
 task install_hadoop(dependsOn: "init") << {
@@ -143,7 +167,7 @@ task install_hadoop(dependsOn: "init") << {
                                                              "\t\t<value>1</value>\n" +
                                                              "  \t</property>\n" +
                                                              "</configuration>")
-    execute "hdfs", ["namenode", "-format", "-force"], null,
+    execute hdfs, ["namenode", "-format", "-force"], null,
             file("${workshop_files}/logs/namenode-format.out")
 
     execute "${hadoop_home}/sbin/start-dfs.sh"
@@ -154,12 +178,12 @@ task install_hive(dependsOn: ["init", "install_hadoop"]) << {
     def hive = downloadFile "https://archive.apache.org/dist/hive/hive-${hive_version}/apache-hive-${hive_version}-bin.tar.gz"
     extract workshop_files, hive, hive_home
 
-    execute "hadoop", ["fs", "-mkdir", "/tmp"]
-    execute "hadoop", ["fs", "-mkdir", "-p", "/user/hive/warehouse"]
-    execute "hadoop", ["fs", "-chmod", "g+w", "/tmp"]
-    execute "hadoop", ["fs", "-chmod", "g+w", "/user/hive/warehouse"]
-    execute "hadoop", ["fs", "-mkdir", "-p", "hdfs://localhost:9000/usr/local/hive/lib/"]
-    execute "hadoop",
+    execute hadoop, ["fs", "-mkdir", "/tmp"]
+    execute hadoop, ["fs", "-mkdir", "-p", "/user/hive/warehouse"]
+    execute hadoop, ["fs", "-chmod", "g+w", "/tmp"]
+    execute hadoop, ["fs", "-chmod", "g+w", "/user/hive/warehouse"]
+    execute hadoop, ["fs", "-mkdir", "-p", "hdfs://localhost:9000/usr/local/hive/lib/"]
+    execute hadoop,
             ["fs", "-put", "/usr/local/hive/lib/hive-builtins-0.10.0.jar", "hdfs://localhost:9000/usr/local/hive/lib/hive-builtins-0.10.0.jar"]
 
     execute "${hive_home}/bin/hive", [], file("${workshop_files}/logs/hive.out"), file("${workshop_files}/logs/hive.out"), true
@@ -174,8 +198,8 @@ task install_spark(dependsOn: ["init", "install_hadoop", "install_dataset"]) << 
     def spark = downloadFile "http://d3kbcqa49mib13.cloudfront.net/spark-${spark_version}-bin-hadoop2.4.tgz"
     extract workshop_files, spark, spark_home
 
-    execute "hadoop", ["fs", "-mkdir", "hdfs://localhost:9000/movielens/"], file("${workshop_files}/logs/spark.out")
-    execute "hadoop", ["fs", "-put", "${workshop_files}/mlsmall/movies.bson".toString(), "hdfs://localhost:9000/movielens/"],
+    execute hadoop, ["fs", "-mkdir", "hdfs://localhost:9000/movielens/"], file("${workshop_files}/logs/spark.out")
+    execute hadoop, ["fs", "-put", "${workshop_files}/mlsmall/movies.bson".toString(), "hdfs://localhost:9000/movielens/"],
             file("${workshop_files}/logs/spark.out")
 }
 
@@ -191,24 +215,8 @@ def writeTo(file, content) {
 
 task init() << {
     file(workshop_files).mkdirs()
-    if (!fileContains(profile, "HADOOP_PREFIX")) {
-        log "Setting HADOOP_PREFIX"
-        append profile, "export HADOOP_PREFIX=${hadoop_home}"
-        append profile, "export PATH=\$PATH:\$HADOOP_PREFIX/bin:\$HADOOP_PREFIX/sbin"
-    }
-    if (!fileContains(profile, "HIVE_HOME")) {
-        log "Setting HIVE_HOME"
-        append profile, "export HIVE_HOME=${hive_home}"
-        append profile, "export PATH=\$PATH:\$HIVE_HOME/bin"
-    }
-    if (!fileContains(profile, "PIG_HOME")) {
-        log "Setting PIG_HOME"
-        append profile, "export PIG_HOME=${pig_home}"
-        append profile, "export PATH=\$PATH:\$PIG_HOME/bin "
-    }
-    if (!fileContains(profile, "SPARK_HOME")) {
-        log "Setting SPARK_HOME"
-        append profile, "export SPARK_HOME=${spark_home}"
-        append profile, "export PATH=\$PATH:\$SPARK_HOME/bin"
-    }
+    System.properties.HADOOP_PREFIX = hadoop_home.getAbsolutePath()
+    System.properties.HIVE_HOME = hive_home.getAbsolutePath()
+    System.properties.PIG_HOME = pig_home.getAbsolutePath()
+    System.properties.SPARK_HOME = spark_home.getAbsolutePath()
 }
