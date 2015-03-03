@@ -43,7 +43,8 @@ public class MapReduceExercise
 
     public static class Reduce extends Reducer<IntWritable, DoubleWritable, NullWritable, BSONWritable> {
         @Override
-        public void reduce(final IntWritable key, final Iterable<DoubleWritable> values, final Context context)
+        public void reduce(final IntWritable key, final Iterable<DoubleWritable> values,
+                           final Context context)
           throws IOException, InterruptedException {
             DescriptiveStatistics stats = new DescriptiveStatistics();
             for(DoubleWritable rating : values) {
@@ -65,9 +66,12 @@ public class MapReduceExercise
         }
     }
 
-    public static class ReduceUpdater extends Reducer<IntWritable, DoubleWritable, NullWritable, MongoUpdateWritable> {
+    public static class ReduceUpdater extends Reducer<IntWritable, DoubleWritable,
+                                 NullWritable, MongoUpdateWritable> {
         @Override
-        public void reduce(final IntWritable key, final Iterable<DoubleWritable> values, final Context context)
+        public void reduce(final IntWritable key, 
+                           final Iterable<DoubleWritable> values, 
+                           final Context context)
           throws IOException, InterruptedException {
             DescriptiveStatistics stats = new DescriptiveStatistics();
             for(DoubleWritable rating : values) {

@@ -14,8 +14,10 @@ ratings_stats = FOREACH grouped {
     count = COUNT(ratings);
     median = datafu.pig.stats.StreamingMedian(ratings.rating);
     variance = datafu.pig.stats.VAR(ratings.rating);
-    GENERATE group as movieid, mean as mean, sum as sum, count as count, median.quantile_0_5 as median, variance as variance;
+    GENERATE group as movieid, mean as mean, sum as sum, count as count,
+     median.quantile_0_5 as median, variance as variance;
 }
 
-STORE ratings_stats INTO 'mongodb://127.0.0.1:27017/movielens.pig_exercise3'
+STORE ratings_stats 
+    INTO 'mongodb://127.0.0.1:27017/movielens.pig_exercise3'
     USING com.mongodb.hadoop.pig.MongoStorage;

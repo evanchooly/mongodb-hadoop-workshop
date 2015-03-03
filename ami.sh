@@ -148,7 +148,6 @@ function install_workshop() {
 	[ ! -d mongodb-hadoop-workshop ] && git clone https://github.com/evanchooly/mongodb-hadoop-workshop.git
 	cd mongodb-hadoop-workshop
 	git pull
-	git checkout noanswers
 
 	cd dataset
 	tar zxf mlsmall.tar.gz
@@ -156,6 +155,8 @@ function install_workshop() {
 	
 	cd ..
 	mvn compile clean
+	git checkout noanswers
+	
 	#if [ ! -f ml-10m.zip ] 
 	#then 
 		#wget http://files.grouplens.org/datasets/movielens/ml-10m.zip

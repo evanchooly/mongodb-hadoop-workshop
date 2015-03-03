@@ -52,7 +52,8 @@ public class SparkExercise {
         // load users
         mongodbConfig.set("mongo.input.uri", MONGODB + ".users");
         JavaRDD<Object> users =
-            sc.newAPIHadoopRDD(mongodbConfig, MongoInputFormat.class, Object.class, BSONObject.class)
+            sc.newAPIHadoopRDD(mongodbConfig, MongoInputFormat.class, Object.class,
+                               BSONObject.class)
               .map(doc -> doc._2.get("userid"));
         log.warn("users = " + users.count());
 
@@ -114,6 +115,18 @@ public class SparkExercise {
         outputConfig.set("mongo.output.uri", MONGODB + "." + OUTPUT);
 
         // save the result to mongo
-        predictions.saveAsNewAPIHadoopFile("file:///not-applicable", Object.class, Object.class, MongoOutputFormat.class, outputConfig);
+        predictions.saveAsNewAPIHadoopFile("file:///not-applicable", Object.class, Object.class,
+                                           MongoOutputFormat.class, outputConfig);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
